@@ -16,11 +16,9 @@ class MLP:
 
     def train(self, x, y):
         a, z = self.forward(x)
-        print(pred)
-        print(a)
-        print(z)
+        pred = a[-1]
         loss = self.loss(pred, y)
-        self.backprop(pred, a, z, y, loss)
+        self.backprop(a, z, y, loss)
 
     def forward(self, x):
         aList = []
@@ -37,7 +35,7 @@ class MLP:
         return 1 / (1 + np.exp(-x))
         
     def activationDx(self, x):
-        return self.activation(x)(1 - self.activation(x))
+        return self.activation(x) * (1 - self.activation(x))
 
     # cross entropy
     def loss(self, pred, y):
@@ -45,14 +43,28 @@ class MLP:
  
     def backprop(self, a, z, y, loss):
         lossDerivative = self.getLossDerivative(a[-1], y)
+        self.debug(lossDerivative, 'loss')
         derivativeChain = lossDerivative
-        for weights in range(layersCount - 1, 0, -1):
+        self.debug(derivativeChain, 'dc')
+        deltas = []
+        for l in range(1, self.layersCount-1):
+            delta = np.matmul(derivativeChain, a[-l-1].T)
+            self.debug(delta, 'delta')
+            deltas.append(delta)
+            #derivativeChain = np.matmul(derivativeChain, self.weights[-l])
+            #derivativeChain = derivativeChain * self.activationDx(z[-l-1])
+            self.debug(derivativeChain, 'dc')
 
+        delta = np.matmul(derivativeChain, a[0].T)
+        self.debug(delta, 'delta')
+        deltas.append(delta)
 
     def getLossDerivative(self, a, y):
         return a - y
 
-
+    @staticmethod
+    def debug(x, name):
+        print(name, x.shape)
 
 mlp = MLP([4,5,2])
 x = np.arange(4)
@@ -61,6 +73,7 @@ xMat = np.arange(8).reshape(4,2)
 y = np.array([[0,1], [1,0]])
 print(y)
 print(xMat)
+print(mlp.weights[0].shape, mlp.weights[1].shape)
 output = mlp.train(xMat, y)
 
 
