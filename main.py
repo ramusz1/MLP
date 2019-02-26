@@ -51,13 +51,16 @@ class MLP:
             delta = np.matmul(derivativeChain, a[-l-1].T)
             self.debug(delta, 'delta')
             deltas.append(delta)
-            #derivativeChain = np.matmul(derivativeChain, self.weights[-l])
-            #derivativeChain = derivativeChain * self.activationDx(z[-l-1])
+            derivativeChain = np.matmul(self.weights[-l].T, derivativeChain) * self.activationDx(z[-l-1])
             self.debug(derivativeChain, 'dc')
 
         delta = np.matmul(derivativeChain, a[0].T)
         self.debug(delta, 'delta')
         deltas.append(delta)
+        for d in deltas:
+            print(d.shape)
+        for w in self.weights:
+            print(w.shape)
 
     def getLossDerivative(self, a, y):
         return a - y
@@ -66,11 +69,12 @@ class MLP:
     def debug(x, name):
         print(name, x.shape)
 
-mlp = MLP([4,5,2])
+mlp = MLP([4,5,100,123,4,612,6,2])
 x = np.arange(4)
-xMat = np.arange(8).reshape(4,2)
+xMat = np.arange(12).reshape(4,3)
 # y to one hot
-y = np.array([[0,1], [1,0]])
+y = np.array([[0,1,0], 
+              [1,0,0]])
 print(y)
 print(xMat)
 print(mlp.weights[0].shape, mlp.weights[1].shape)
