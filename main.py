@@ -19,14 +19,12 @@ class MLP:
                 np.random.rand(self.layers[i+1], self.layers[i]))
     
     # train rozdzielony na 2 funkcje 
-    # - dodano trenowanie na batchu
-    # - doadno trenowanie w epokach 
     def train(self, x, y):
         for i in range(self.max_iter):
-            loss = self.trainHelper(x,y)
-#            print(loss)
+            loss = self.trainEpoch(x,y)
+            #print(loss)
         
-    def trainHelper(self, x, y):    
+    def trainEpoch(self, x, y):
         for i in range(0, np.shape(x)[1], self.batch_size):
             X, Y = x[:,i:i+self.batch_size], y[i:i+self.batch_size]
             Y = self.mapClasses(Y) 
@@ -36,6 +34,14 @@ class MLP:
             delta = self.backprop(a, z, Y)
             self.updateWeights(delta)
         return loss
+
+    # z wektora robi macierz jedynek
+    def mapClasses(self, y):
+        y1 = np.zeros([self.layers[-1], np.shape(y)[0]])
+        for i in range(self.layers[-1]):
+            ind = np.where(y == i)
+            y1[(i,ind[0])] = 1
+        return y1
 
     def forward(self, x):
         aList = []
@@ -85,23 +91,15 @@ class MLP:
     
     def updateWeights(self, delta):
         for i in range(self.layersCount-1): #warstw jest o 1 wiecej niż wag
-            self.weights[i] = self.weights[i] - self.alpha * delta[-i-1]
-            
-    # z wektora robi macierz jedynek
-    def mapClasses(self, y):
-        y1 = np.zeros([self.layers[-1], np.shape(y)[0]])
-        for i in range(self.layers[-1]):
-            ind = np.where(y == i)
-            y1[(i,ind[0])] = 1
-        return y1        
+            self.weights[i] = self.weights[i] - self.alpha * delta[-i-1]      
     
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
     def predict(self, x):
         for w in self.weights:
             z = np.matmul(w, x)
             x = self.activation(z)
-        out = np.where(x == np.max(x))
-        return out[0]
+        out = np.argmax(x)
+        return out
     
     #testowa metoda do sprawdzenia, czy sieć się uczy       
     def accuracy(self,x,y):
