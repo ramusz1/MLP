@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 
 class MLP:
 
-    def __init__(self, layers, alpha = 0.9, batch_size = 2, max_iter =300):
+    def __init__(self, layers, alpha = 0.01, eta = 0.1, batch_size = 16, max_iter =300):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.__initWeights()
         self.alpha = alpha
+        self.eta = eta
         self.batch_size = batch_size
         self.max_iter = max_iter
         self.momentum = np.zeros(len(self.weights))
@@ -113,7 +114,7 @@ class MLP:
     
     def updateWeights(self, delta):
         for i in range(self.layersCount-1): #warstw jest o 1 wiecej niż wag
-            self.weights[i] = self.weights[i] - self.alpha * (delta[-i-1] + self.momentum[-i-1]) 
+            self.weights[i] = self.weights[i] - self.alpha * (delta[-i-1] + self.eta * self.momentum[-i-1]) 
         self.momentum = delta
  
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
@@ -210,7 +211,7 @@ y = data['target']
 ind  = np.arange(len(x))
 np.random.shuffle(ind)
 
-mlp = MLP([4,8,4,3])
+mlp = MLP([4,8,3])
 
 training_x, test_x = x[ind[:120]], x[ind[120:]]
 training_y, test_y = y[ind[:120]], y[ind[120:]]
