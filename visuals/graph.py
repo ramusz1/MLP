@@ -39,9 +39,9 @@ class NetworkGraph:
         for n, (layer_size_a, layer_size_b,) in enumerate(zip(self.network.layers[:-1], self.network.layers[1:])):
             layer_top_a = v_spacing*(layer_size_a - 1)/2. + (top + bottom)/2.
             layer_top_b = v_spacing*(layer_size_b - 1)/2. + (top + bottom)/2.
-            alfa  = self.network.weights[n] 
-            alfa[alfa>1] = 1    
-            alfa[alfa<-1] = -1
+            alfa  = self.network.weights[n]
+            # modified sigmoid : R -> (-1,1)
+            alfa = 2 / (1 + np.exp(-alfa)) - 1
             for m in range(layer_size_a):
                 for o in range(layer_size_b):
                     w = alfa[m,o]

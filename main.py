@@ -23,24 +23,22 @@ class MLP:
             self.weights.append( 
                 np.random.rand(self.layers[i], self.layers[i+1]))
     
-    # train rozdzielony na 2 funkcje 
-    def train(self, x, y, plotLoss = False, drawGraph = False):
-        if plotLoss:
-            lossPlot = LossPlotter(self.epochLength)
-            lossList = []
-            for i in range(self.epochLength):
-                loss = self.trainEpoch(x,y)
-                lossList.append(loss)
-                lossPlot.plotLive(i, lossList)
+    def presentationOfTraining(self, x, y):
+        print("presentation mode, press enter to go to next epoch results")
+        fig = NetworkGraph(self)
+        for i in range(self.epochLength):
+            loss = self.trainEpoch(x,y)
+            fig.draw()
+            input('epoch: {}'.format(i+1))
 
-        if drawGraph:
-            fig = NetworkGraph(self)
-            for i in range(self.epochLength):
-                loss = self.trainEpoch(x,y)
-                print(loss)
-                if(i%2 == 0):
-                    fig.draw()
-        
+    def train(self, x, y, plotLoss = False):
+        lossPlot = LossPlotter(self.epochLength)
+        for i in range(self.epochLength):
+            loss = self.trainEpoch(x,y)
+            if plotLoss:
+                lossPlot.plotLive(i, loss)
+    
+    # returns loss of last training session
     def trainEpoch(self, x, y):
         for i in range(0, len(x), self.batch_size):
             X, Y = x[i:i+self.batch_size], y[i:i+self.batch_size]
@@ -128,7 +126,9 @@ class MLP:
             suma = suma + (prediction==y)
         n = len(Y)
         return suma/n
-                
+
+
+# prepare datasets
 data = datasets.load_iris()
 x = data['data']
 y = data['target']
@@ -139,7 +139,37 @@ mlp = MLP([4,8,3])
 
 training_x, test_x = x[ind[:120]], x[ind[120:]]
 training_y, test_y = y[ind[:120]], y[ind[120:]]
-mlp.train(training_x, training_y, plotLoss = False, drawGraph = True)
 
-print('Accuracy on training set: ', mlp.accuracy(training_x,training_y))
-print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+# 2 run options:
+# 1. step by step mode with neural network graph
+# 2. normal mode:
+# - with loss plot
+# - with training set visualization
+# - only test
+import argparse
+
+parser = argparse.ArgumentParser(description='Run mlp classifier training.')
+
+parser.add_argument('--step_by_step', default=False, action='store_true',
+                   help='step by step mode with neural network graph visualization')
+
+parser.add_argument('--plot_loss', default=False, action='store_true',
+                   help='show live plot of the loss')
+
+parser.add_argument('--show_set', default=False, action='store_true',
+                   help='show resulting division of the training set')
+
+args = parser.parse_args()
+
+if args.step_by_step:
+    mlp.presentationOfTraining(training_x, training_y)
+else:
+    mlp.train(training_x, training_y, plotLoss = args.plot_loss)
+    print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
+    print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+
+if args.show_set:
+    # show resulting diviosion
+    pass
+
+

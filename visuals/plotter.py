@@ -13,10 +13,12 @@ class LossPlotter:
         self.points = self.ax.plot([], [], '-')[0]
         #always draw 100 times 
         self.draw_moments = np.round(np.linspace(0, maxXValue, 100))
+        self.lossList = []
     
-    def plotLive(self, k, loss):
-        if k in self.draw_moments:
-            self.points.set_data(range(k+1), loss)
+    def plotLive(self, currentMoment, loss):
+        self.lossList.append(loss)
+        if currentMoment in self.draw_moments:
+            self.points.set_data(range(currentMoment+1), self.lossList)
             self.fig.canvas.restore_region(self.background)
             # redraw just the points
             self.ax.draw_artist(self.points)
