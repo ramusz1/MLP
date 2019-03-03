@@ -1,15 +1,20 @@
 import numpy as np
 from sklearn import datasets
 
+from visuals.plotter import LossPlotter
+from visuals.graph import NetworkGraph
+
 class MLP:
 
-    def __init__(self, layers, alpha = 0.1, batch_size = 4, max_iter = 200):
+    def __init__(self, layers, alpha = 0.01, eta = 0.01, batch_size = 16, epochLength = 300):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.__initWeights()
         self.alpha = alpha
+        self.eta = eta
         self.batch_size = batch_size
-        self.max_iter = max_iter
+        self.epochLength = epochLength
+        self.momentum = np.zeros(len(self.weights))
         
 
     def __initWeights(self):
@@ -18,12 +23,22 @@ class MLP:
             self.weights.append( 
                 np.random.rand(self.layers[i], self.layers[i+1]))
     
-    # train rozdzielony na 2 funkcje 
-    def train(self, x, y):
-        for i in range(self.max_iter):
+    def presentationOfTraining(self, x, y):
+        print("presentation mode, press enter to go to next epoch results")
+        fig = NetworkGraph(self)
+        for i in range(self.epochLength):
             loss = self.trainEpoch(x,y)
-            print(loss)
-        
+            fig.draw()
+            input('epoch: {}'.format(i+1))
+
+    def train(self, x, y, plotLoss = False):
+        lossPlot = LossPlotter(self.epochLength)
+        for i in range(self.epochLength):
+            loss = self.trainEpoch(x,y)
+            if plotLoss:
+                lossPlot.plotLive(i, loss)
+    
+    # returns loss of last training session
     def trainEpoch(self, x, y):
         for i in range(0, len(x), self.batch_size):
             X, Y = x[i:i+self.batch_size], y[i:i+self.batch_size]
@@ -59,9 +74,12 @@ class MLP:
         return self.activation(x) * (1 - self.activation(x))
 
     # cross entropy
+#    def loss(self, pred, y):
+#        return - np.sum(y * np.log(pred))
+    # MSE
     def loss(self, pred, y):
-        return - np.sum(y * np.log(pred))
- 
+        return 1/len(y) * np.sum((y-pred)**2)
+    
     def backprop(self, a, z, y):
         derivativeChain = self.getLossDerivative(a[-1], y)
         deltas = []
@@ -89,8 +107,10 @@ class MLP:
     
     def updateWeights(self, delta):
         for i in range(self.layersCount-1): #warstw jest o 1 wiecej niż wag
-            self.weights[i] = self.weights[i] - self.alpha * delta[-i-1]      
-    
+            self.weights[i] = self.weights[i] - self.alpha * delta[-i-1] - self.eta * self.momentum[-i-1]
+            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(delta[-i-1])))
+        self.momentum = delta
+ 
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
     def predict(self, x):
         for w in self.weights:
@@ -99,7 +119,6 @@ class MLP:
         out = np.argmax(x)
         return out
     
-    #testowa metoda do sprawdzenia, czy sieć się uczy       
     def accuracy(self, X, Y):
         suma = 0
         for x, y in zip(X,Y):
@@ -108,6 +127,8 @@ class MLP:
         n = len(Y)
         return suma/n
 
+
+# prepare datasets
 data = datasets.load_iris()
 x = data['data']
 y = data['target']
@@ -118,7 +139,37 @@ mlp = MLP([4,8,3])
 
 training_x, test_x = x[ind[:120]], x[ind[120:]]
 training_y, test_y = y[ind[:120]], y[ind[120:]]
-mlp.train(training_x, training_y)
 
-print('Accuracy on training set: ', mlp.accuracy(training_x,training_y))
-print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+# 2 run options:
+# 1. step by step mode with neural network graph
+# 2. normal mode:
+# - with loss plot
+# - with training set visualization
+# - only test
+import argparse
+
+parser = argparse.ArgumentParser(description='Run mlp classifier training.')
+
+parser.add_argument('--step_by_step', default=False, action='store_true',
+                   help='step by step mode with neural network graph visualization')
+
+parser.add_argument('--plot_loss', default=False, action='store_true',
+                   help='show live plot of the loss')
+
+parser.add_argument('--show_set', default=False, action='store_true',
+                   help='show resulting division of the training set')
+
+args = parser.parse_args()
+
+if args.step_by_step:
+    mlp.presentationOfTraining(training_x, training_y)
+else:
+    mlp.train(training_x, training_y, plotLoss = args.plot_loss)
+    print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
+    print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+
+if args.show_set:
+    # show resulting diviosion
+    pass
+
+
