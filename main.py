@@ -18,23 +18,22 @@ def loadDataset(filename):
 
 # prepare datasets
 #x, y = loadIris()
-x, y = loadDataset('datasets/classification/data.simple.test.1000.csv')
-ind  = np.arange(len(x))
-np.random.shuffle(ind)
+training_x, training_y = loadDataset('datasets/classification/data.simple.train.1000.csv')
+test_x, test_y = loadDataset('datasets/classification/data.simple.test.1000.csv')
 
 # iris uses labels starting from 0, downloaded datasets use labels starting from 1
 # it's problematic in class maping later on
-y = y - np.min(y)
 
-inputSize = x.shape[1]
-outputSize = len(np.unique(y))
+training_y = training_y - np.min(training_y)
+test_y = test_y - np.min(test_y)
+print(training_y)
+print(test_y)
+
+
+inputSize = training_x.shape[1]
+outputSize = len(np.unique(training_y))
 
 mlp = MLP([inputSize, 8, outputSize], usesBias = True)
-
-trainingSize = int(0.8 * len(x))
-
-training_x, test_x = x[ind[:trainingSize]], x[ind[trainingSize:]]
-training_y, test_y = y[ind[:trainingSize]], y[ind[trainingSize:]]
 
 # 2 run options:
 # 1. step by step mode with neural network graph
