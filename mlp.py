@@ -5,14 +5,14 @@ from visuals.graph import NetworkGraph
 
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batch_size = 16, epochLength = 500):
+    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batch_size = 16, maxIter = 500):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias
         self.alpha = alpha
         self.eta = eta
         self.batch_size = batch_size
-        self.epochLength = epochLength
+        self.maxIter = maxIter
         self.__initWeights()
         self.__initMomentum()
         if self.usesBias:
@@ -22,7 +22,7 @@ class MLP:
         self.weights = []
         for i in range(len(self.layers) - 1):
             self.weights.append( 
-                np.random.rand(self.layers[i], self.layers[i+1]))
+                np.random.randn(self.layers[i], self.layers[i+1]))
 
     def __initMomentum(self):
         self.momentum = []
@@ -32,26 +32,27 @@ class MLP:
         if self.usesBias:
             self.biasMomentum = []
             for i in range(len(self.layers) - 1):
-                self.biasMomentum.append(np.random.rand(self.layers[i+1]))
+                self.biasMomentum.append(np.random.randn(self.layers[i+1]))
 
     def __initBias(self):
         self.bias = []
         for i in range(len(self.layers) - 1):
-            self.bias.append(np.random.rand(self.layers[i+1]))
+            self.bias.append(np.random.randn(self.layers[i+1]))
 
     
     def presentationOfTraining(self, x, y):
         print("presentation mode, press enter to go to next epoch results")
         fig = NetworkGraph(self)
-        for i in range(self.epochLength):
-            loss = self.trainEpoch(x,y)
+        oneHotY = self.mapClasses(y)
+        for i in range(self.maxIter):
+            loss = self.trainEpoch(x,oneHotY)
             fig.draw()
             input('epoch: {}'.format(i+1))
 
     def train(self, x, y, plotLoss = False):
-        lossPlot = LossPlotter(self.epochLength)
+        lossPlot = LossPlotter(self.maxIter)
         oneHotY = self.mapClasses(y)
-        for i in range(self.epochLength):
+        for i in range(self.maxIter):
             loss = self.trainEpoch(x,oneHotY)
             if plotLoss:
                 lossPlot.plotLive(i, loss)
@@ -140,7 +141,7 @@ class MLP:
             if self.usesBias:
                 self.biasMomentum[i] = self.eta * self.biasMomentum[i] + (1 - self.eta) * biasDeltas[-i-1]
                 self.bias[i] -= self.alpha * self.biasMomentum[i]
-            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(delta[-i-1])))
+            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(weightDeltas[-i-1])))
 
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
     def predict(self, x):

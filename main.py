@@ -18,22 +18,19 @@ def loadDataset(filename):
 
 # prepare datasets
 #x, y = loadIris()
-training_x, training_y = loadDataset('datasets/classification/data.simple.train.1000.csv')
-test_x, test_y = loadDataset('datasets/classification/data.simple.test.1000.csv')
+training_x, training_y = loadDataset('datasets/classification/data.three_gauss.train.1000.csv')
+test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.1000.csv')
 
 # iris uses labels starting from 0, downloaded datasets use labels starting from 1
 # it's problematic in class maping later on
 
 training_y = training_y - np.min(training_y)
 test_y = test_y - np.min(test_y)
-print(training_y)
-print(test_y)
-
 
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 8, outputSize], usesBias = True)
+mlp = MLP([inputSize, 16, 8, 4, outputSize], usesBias = False)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -64,10 +61,6 @@ else:
     print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
 
 if args.show_set:
-    if x.shape[1] != 2:
+    if training_x.shape[1] != 2:
         print('set visualization is only possible wneh there are 2 features')
-    visualizeSet(mlp,x,y)
-
-    pass
-
-
+    visualizeSet(mlp,training_x,training_y)
