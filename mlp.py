@@ -2,10 +2,12 @@ import numpy as np
 
 from visuals.plotter import LossPlotter
 from visuals.graph import NetworkGraph
+import sys
+
 
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batch_size = 16, epochLength = 500):
+    def __init__(self, layers, usesBias = False, alpha = 0.11, eta = 0.9, batch_size = 16, epochLength = 100):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias
@@ -22,7 +24,7 @@ class MLP:
         self.weights = []
         for i in range(len(self.layers) - 1):
             self.weights.append( 
-                np.random.rand(self.layers[i], self.layers[i+1]))
+                np.random.randn(self.layers[i], self.layers[i+1]))
 
     def __initMomentum(self):
         self.momentum = []
@@ -32,30 +34,48 @@ class MLP:
         if self.usesBias:
             self.biasMomentum = []
             for i in range(len(self.layers) - 1):
-                self.biasMomentum.append(np.random.rand(self.layers[i+1]))
+                self.biasMomentum.append(np.random.randn(self.layers[i+1]))
 
     def __initBias(self):
         self.bias = []
         for i in range(len(self.layers) - 1):
-            self.bias.append(np.random.rand(self.layers[i+1]))
+            self.bias.append(np.random.randn(self.layers[i+1]))
 
     
     def presentationOfTraining(self, x, y):
         print("presentation mode, press enter to go to next epoch results")
         fig = NetworkGraph(self)
+        oneHotY = self.mapClasses(y)
         for i in range(self.epochLength):
-            loss = self.trainEpoch(x,y)
+            loss = self.trainEpoch(x,oneHotY)
             fig.draw()
             input('epoch: {}'.format(i+1))
 
     def train(self, x, y, plotLoss = False):
-        lossPlot = LossPlotter(self.epochLength)
+        x, y, x_val, y_val = self.makeValidationSets(x,y)
+        
         oneHotY = self.mapClasses(y)
+        oneHotYVal = self.mapClasses(y_val)
+        if plotLoss:
+            lossPlot = LossPlotter(self.epochLength)
         for i in range(self.epochLength):
             loss = self.trainEpoch(x,oneHotY)
+            pred_val = self.predict_help(x_val)
+            loss_val = self.loss(pred_val,oneHotYVal)
             if plotLoss:
-                lossPlot.plotLive(i, loss)
-    
+#                lossPlot.plotLive(i,loss)
+                lossPlot.plotLive(i,[loss,loss_val])
+            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.epochLength*100))
+            sys.stdout.flush()
+        print('\n')
+            
+    def makeValidationSets(self, x, y, setSize = 0.1):
+        n = len(x)
+        ind = np.random.choice(range(n), int(np.round(n*setSize)))
+        x_val, y_val = x[ind], y[ind]
+        x, y = np.delete(x, ind, axis=0), np.delete(y, ind, axis=0)
+        return x, y, x_val, y_val
+        
     # z wektora robi macierz jedynek
     def mapClasses(self, y):
         oneHotVectors = np.zeros((len(y), self.layers[-1]))
@@ -68,9 +88,13 @@ class MLP:
             X, Y = x[i:i+self.batch_size], y[i:i+self.batch_size]
             a, z = self.forward(X)
             pred = a[-1]
-            loss = self.loss(pred, Y)
+            ## Wyswietlany bląd jest tylko z ostatniego batcha
+#           loss = self.loss(pred, Y)
+            
             weightDeltas, biasDeltas = self.backprop(a, z, Y)
             self.updateWeights(weightDeltas, biasDeltas)
+        pred = self.predict_help(x)
+        loss = self.loss(pred, y)
         return loss
 
 
@@ -147,14 +171,21 @@ class MLP:
         for w in self.weights:
             z = np.matmul(x, w)
             x = self.activation(z)
-        out = np.argmax(x)
+        if(x.ndim >1):
+            out = np.argmax(x, axis = 1)
+        else:
+            out = np.argmax(x)
         return out
     
-    def accuracy(self, X, Y):
-        suma = 0
-        for x, y in zip(X,Y):
-            prediction = self.predict(x)
-            suma = suma + (prediction==y)
+    def predict_help(self, x):
+        for w in self.weights:
+            z = np.matmul(x, w)
+            x = self.activation(z)
+        return x
+        
+    def accuracy(self, X, Y):      
+        prediction = self.predict(X)
+        suma = sum(prediction == Y)
         n = len(Y)
         return suma/n
 

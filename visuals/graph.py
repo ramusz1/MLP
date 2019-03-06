@@ -22,23 +22,23 @@ class NetworkGraph:
 
     def drawNodes(self):
         left, right, bottom, top = .1, .9, .1, .9
-        v_spacing = (top - bottom)/float(max(self.network.layers))
-        h_spacing = (right - left)/float(len(self.network.layers) - 1)
+        v_spacing = (top - bottom)/max(self.network.layers)
+        h_spacing = (right - left)/(len(self.network.layers) - 1)
         # Nodes
         for n, layer_size in enumerate(self.network.layers):
-            layer_top = v_spacing*(layer_size - 1)/2. + (top + bottom)/2.
+            layer_top = v_spacing*(layer_size - 1)/2. + (top + bottom)/2
             for m in range(layer_size):
-                circle = plt.Circle((n*h_spacing + left, layer_top - m*v_spacing), v_spacing/4.,
+                circle = plt.Circle((n*h_spacing + left, layer_top - m*v_spacing), v_spacing/4,
                                 color='w', ec='k', zorder=4)
                 self.ax.add_artist(circle)
      
     def drawEdges(self):
         left, right, bottom, top = .1, .9, .1, .9
-        v_spacing = (top - bottom)/float(max(self.network.layers))
-        h_spacing = (right - left)/float(len(self.network.layers) - 1)
+        v_spacing = (top - bottom)/max(self.network.layers)
+        h_spacing = (right - left)/(len(self.network.layers) - 1)
         for n, (layer_size_a, layer_size_b,) in enumerate(zip(self.network.layers[:-1], self.network.layers[1:])):
-            layer_top_a = v_spacing*(layer_size_a - 1)/2. + (top + bottom)/2.
-            layer_top_b = v_spacing*(layer_size_b - 1)/2. + (top + bottom)/2.
+            layer_top_a = v_spacing*(layer_size_a - 1)/2 + (top + bottom)/2
+            layer_top_b = v_spacing*(layer_size_b - 1)/2 + (top + bottom)/2
             alfa  = self.network.weights[n]
             # modified sigmoid : R -> (-1,1)
             alfa = 2 / (1 + np.exp(-alfa)) - 1
