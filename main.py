@@ -20,10 +20,6 @@ def loadDataset(filename):
 #x, y = loadIris()
 training_x, training_y = loadDataset('classification/data.three_gauss.train.1000.csv')
 test_x, test_y = loadDataset('classification/data.three_gauss.test.1000.csv')
-#ind  = np.arange(len(x))
-#np.random.shuffle(ind)
-
-
 
 # iris uses labels starting from 0, downloaded datasets use labels starting from 1
 # it's problematic in class maping later on
@@ -33,13 +29,7 @@ test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 8, outputSize], usesBias = True)
-#
-
-#trainingSize = int(0.8 * len(x))
-#
-#training_x, test_x = x[ind[:trainingSize]], x[ind[trainingSize:]]
-#training_y, test_y = y[ind[:trainingSize]], y[ind[trainingSize:]]
+mlp = MLP([inputSize, 64, outputSize], usesBias = True)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -73,7 +63,7 @@ else:
 if args.show_set:
     if training_x.shape[1] != 2:
         print('set visualization is only possible wneh there are 2 features')
-    visualizeSet(mlp,training_x,training_y)
+    visualizeSet(mlp, training_x, training_y)
 
     pass
 

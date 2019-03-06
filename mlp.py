@@ -7,7 +7,7 @@ import sys
 
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.11, eta = 0.9, batch_size = 16, epochLength = 100):
+    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batch_size = 32, epochLength = 100):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias
@@ -47,29 +47,28 @@ class MLP:
         fig = NetworkGraph(self)
         oneHotY = self.mapClasses(y)
         for i in range(self.epochLength):
-            loss = self.trainEpoch(x,oneHotY)
+            self.trainEpoch(x,oneHotY)
             fig.draw()
             input('epoch: {}'.format(i+1))
 
     def train(self, x, y, plotLoss = False):
         x, y, x_val, y_val = self.makeValidationSets(x,y)
-        
         oneHotY = self.mapClasses(y)
         oneHotYVal = self.mapClasses(y_val)
+        
         if plotLoss:
             lossPlot = LossPlotter(self.epochLength)
         for i in range(self.epochLength):
             loss = self.trainEpoch(x,oneHotY)
-            pred_val = self.predict_help(x_val)
+            pred_val = self.predict(x_val)
             loss_val = self.loss(pred_val,oneHotYVal)
             if plotLoss:
-#                lossPlot.plotLive(i,loss)
                 lossPlot.plotLive(i,[loss,loss_val])
             sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.epochLength*100))
             sys.stdout.flush()
-        print('\n')
+        print('')
             
-    def makeValidationSets(self, x, y, setSize = 0.1):
+    def makeValidationSets(self, x, y, setSize = 0.2):
         n = len(x)
         ind = np.random.choice(range(n), int(np.round(n*setSize)))
         x_val, y_val = x[ind], y[ind]
@@ -88,12 +87,12 @@ class MLP:
             X, Y = x[i:i+self.batch_size], y[i:i+self.batch_size]
             a, z = self.forward(X)
             pred = a[-1]
-            ## Wyswietlany bląd jest tylko z ostatniego batcha
+            ## wrong: Displaying loss only on last mini-batch
 #           loss = self.loss(pred, Y)
-            
             weightDeltas, biasDeltas = self.backprop(a, z, Y)
             self.updateWeights(weightDeltas, biasDeltas)
-        pred = self.predict_help(x)
+        # Fixed: after training on mini-batches we count total loss on whole set
+        pred = self.predict(x)
         loss = self.loss(pred, y)
         return loss
 
@@ -167,7 +166,7 @@ class MLP:
             # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(delta[-i-1])))
 
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
-    def predict(self, x):
+    def predictLabel(self, x):
         for w in self.weights:
             z = np.matmul(x, w)
             x = self.activation(z)
@@ -177,14 +176,14 @@ class MLP:
             out = np.argmax(x)
         return out
     
-    def predict_help(self, x):
+    def predict(self, x):
         for w in self.weights:
             z = np.matmul(x, w)
             x = self.activation(z)
         return x
         
-    def accuracy(self, X, Y):      
-        prediction = self.predict(X)
+    def accuracy(self, X, Y):
+        prediction = self.predictLabel(X)
         suma = sum(prediction == Y)
         n = len(Y)
         return suma/n

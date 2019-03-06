@@ -28,7 +28,7 @@ def getDividedSpace(model, xRange, yRange, resolution):
     image = np.zeros(shape=(height, width))
     for x, row in enumerate(image):
         for y, _ in enumerate(row):
-            image[x][y] = model.predict(
+            image[x][y] = model.predictLabel(
                 [x/resolution + minX, y/resolution + minY])
 
     return image
