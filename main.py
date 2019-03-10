@@ -18,8 +18,8 @@ def loadDataset(filename):
 
 # prepare datasets
 #x, y = loadIris()
-training_x, training_y = loadDataset('classification/data.three_gauss.train.1000.csv')
-test_x, test_y = loadDataset('classification/data.three_gauss.test.1000.csv')
+training_x, training_y = loadDataset('datasets/classification/data.three_gauss.train.100.csv')
+test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.100.csv')
 
 # iris uses labels starting from 0, downloaded datasets use labels starting from 1
 # it's problematic in class maping later on
@@ -29,7 +29,7 @@ test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 64, outputSize], usesBias = True)
+mlp = MLP([inputSize, 64, 32, 16, outputSize], usesBias = True)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -44,10 +44,10 @@ parser = argparse.ArgumentParser(description='Run mlp classifier training.')
 parser.add_argument('--step_by_step', default=False, action='store_true',
                    help='step by step mode with neural network graph visualization')
 
-parser.add_argument('--plot_loss', default=True, action='store_true',
+parser.add_argument('--plot_loss', default=False, action='store_true',
                    help='show live plot of the loss')
 
-parser.add_argument('--show_set', default=True, action='store_true',
+parser.add_argument('--show_set', default=False, action='store_true',
                    help='show resulting division of the training set')
 
 args = parser.parse_args()
@@ -64,7 +64,3 @@ if args.show_set:
     if training_x.shape[1] != 2:
         print('set visualization is only possible wneh there are 2 features')
     visualizeSet(mlp, training_x, training_y)
-
-    pass
-
-

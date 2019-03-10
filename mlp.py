@@ -7,14 +7,14 @@ import sys
 
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batch_size = 32, epochLength = 100):
+    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batchSize = 32, maxIter = 1000):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias
         self.alpha = alpha
         self.eta = eta
-        self.batch_size = batch_size
-        self.epochLength = epochLength
+        self.batchSize = batchSize
+        self.maxIter = maxIter
         self.__initWeights()
         self.__initMomentum()
         if self.usesBias:
@@ -46,7 +46,7 @@ class MLP:
         print("presentation mode, press enter to go to next epoch results")
         fig = NetworkGraph(self)
         oneHotY = self.mapClasses(y)
-        for i in range(self.epochLength):
+        for i in range(self.maxIter):
             self.trainEpoch(x,oneHotY)
             fig.draw()
             input('epoch: {}'.format(i+1))
@@ -57,14 +57,14 @@ class MLP:
         oneHotYVal = self.mapClasses(y_val)
         
         if plotLoss:
-            lossPlot = LossPlotter(self.epochLength)
-        for i in range(self.epochLength):
+            lossPlot = LossPlotter(self.maxIter)
+        for i in range(self.maxIter):
             loss = self.trainEpoch(x,oneHotY)
             pred_val = self.predict(x_val)
             loss_val = self.loss(pred_val,oneHotYVal)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
-            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.epochLength*100))
+            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
             sys.stdout.flush()
         print('')
             
@@ -83,8 +83,8 @@ class MLP:
 
     # returns loss of last training session
     def trainEpoch(self, x, y):
-        for i in range(0, len(x), self.batch_size):
-            X, Y = x[i:i+self.batch_size], y[i:i+self.batch_size]
+        for i in range(0, len(x), self.batchSize):
+            X, Y = x[i:i+self.batchSize], y[i:i+self.batchSize]
             a, z = self.forward(X)
             pred = a[-1]
             ## wrong: Displaying loss only on last mini-batch
@@ -163,7 +163,7 @@ class MLP:
             if self.usesBias:
                 self.biasMomentum[i] = self.eta * self.biasMomentum[i] + (1 - self.eta) * biasDeltas[-i-1]
                 self.bias[i] -= self.alpha * self.biasMomentum[i]
-            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(delta[-i-1])))
+            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(weightDeltas[-i-1])))
 
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
     def predictLabel(self, x):

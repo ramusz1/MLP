@@ -17,7 +17,7 @@ def visualizeSet(model, data, label):
         cmap = 'Set2',
         origin = 'lower',
         extent = [xRange[0], xRange[1], yRange[0], yRange[1]])
-    plt.scatter(x, y, c = label)
+    plt.scatter(x, y, c = label, alpha = 0.5)
 
     plt.show()
 
