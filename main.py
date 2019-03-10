@@ -4,6 +4,8 @@ from mlp import MLP
 import pandas as pd
 from visuals.setVisualization import visualizeSet
 
+import functions as fn
+
 def loadIris():
     data = datasets.load_iris()
     x = data['data']
@@ -29,7 +31,12 @@ test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 64, 32, 16, outputSize], usesBias = True)
+mlp = MLP(
+    layers = [inputSize, 16, outputSize],
+    activation = [fn.sigmoid(), fn.sigmoid()],
+    lossFunction = fn.MSE(),
+    maxIter = 1000,
+    usesBias = True)
 
 # 2 run options:
 # 1. step by step mode with neural network graph

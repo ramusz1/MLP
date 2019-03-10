@@ -5,9 +5,20 @@ from visuals.graph import NetworkGraph
 import sys
 
 
+import functions
+
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batchSize = 32, maxIter = 1000):
+    def __init__(self, 
+            layers,
+            activation,
+            lossFunction = functions.MSE(),
+            usesBias = False,
+            alpha = 0.01,
+            eta = 0.9,
+            batchSize = 32,
+            maxIter = 500):
+
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias
@@ -15,7 +26,10 @@ class MLP:
         self.eta = eta
         self.batchSize = batchSize
         self.maxIter = maxIter
+        self.activation = activation
+        self.lossFunction = lossFunction
         self.__initWeights()
+        assert len(self.activation) == len(self.weights)
         self.__initMomentum()
         if self.usesBias:
             self.__initBias()
@@ -61,7 +75,7 @@ class MLP:
         for i in range(self.maxIter):
             loss = self.trainEpoch(x,oneHotY)
             pred_val = self.predict(x_val)
-            loss_val = self.loss(pred_val,oneHotYVal)
+            loss_val = self.lossFunction.call(pred_val,oneHotYVal)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
             sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
@@ -87,15 +101,11 @@ class MLP:
             X, Y = x[i:i+self.batchSize], y[i:i+self.batchSize]
             a, z = self.forward(X)
             pred = a[-1]
-            ## wrong: Displaying loss only on last mini-batch
-#           loss = self.loss(pred, Y)
             weightDeltas, biasDeltas = self.backprop(a, z, Y)
             self.updateWeights(weightDeltas, biasDeltas)
-        # Fixed: after training on mini-batches we count total loss on whole set
         pred = self.predict(x)
-        loss = self.loss(pred, y)
+        loss = self.lossFunction.call(pred, y)
         return loss
-
 
     def forward(self, x):
         aList = []
@@ -105,32 +115,19 @@ class MLP:
             z = np.matmul(x, self.weights[i])
             if self.usesBias:
                 z = z + self.bias[i]
-            x = self.activation(z)
+            x = self.activation[i].call(z)
             zList.append(z)
 
         aList.append(x)
         return aList, zList
 
-    def activation(self, x):
-        return 1 / (1 + np.exp(-x))
-        
-    def activationDx(self, x):
-        return self.activation(x) * (1 - self.activation(x))
-
-    # cross entropy
-#    def loss(self, pred, y):
-#        return - np.sum(y * np.log(pred))
-    # MSE
-    def loss(self, pred, y):
-        return 1/len(y) * np.sum((y-pred)**2)
-    
     def backprop(self, a, z, y):
-        derivativeChain = self.getLossDerivative(a[-1], y)
+        derivativeChain = self.lossFunction.derivative(a[-1], y)
         deltas = []
         biasDeltas = []
         for l in range(1, self.layersCount):
             # activation function backprop
-            derivativeChain = derivativeChain * self.activationDx(z[-l])
+            derivativeChain = derivativeChain * self.activation[-l].derivative(z[-l])
             # addition backprop
             # empty
             # bias gradient is ready
@@ -147,11 +144,6 @@ class MLP:
 
         return deltas, biasDeltas
 
-    def getLossDerivative(self, pred, y):
-        # imo cross entropy derivative is - y / pred
-        # pred - y is mean square error
-        return  pred - y
-    
     # momentum from :
     # https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d
     def updateWeights(self, weightDeltas, biasDeltas):
@@ -167,9 +159,9 @@ class MLP:
 
     #forward bez zapisywania, wybierana jest klasa z największym prawd.
     def predictLabel(self, x):
-        for w in self.weights:
+        for w, activation in zip(self.weights, self.activation):
             z = np.matmul(x, w)
-            x = self.activation(z)
+            x = activation.call(z)
         if(x.ndim >1):
             out = np.argmax(x, axis = 1)
         else:
@@ -177,9 +169,9 @@ class MLP:
         return out
     
     def predict(self, x):
-        for w in self.weights:
+        for w, activation in zip(self.weights, self.activation):
             z = np.matmul(x, w)
-            x = self.activation(z)
+            x = activation.call(z)
         return x
         
     def accuracy(self, X, Y):
