@@ -16,7 +16,7 @@ class MLP:
             usesBias = False,
             alpha = 0.1,
             eta = 0.5,
-            gamma = 0.9, 
+            gamma = 0.99,
             batchSize = 32,
             maxIter = 500):
 
@@ -25,6 +25,7 @@ class MLP:
         self.usesBias = usesBias
         self.alpha = alpha
         self.eta = eta
+        self.gamma = gamma
         self.batchSize = batchSize
         self.maxIter = maxIter
         self.activation = activation
@@ -78,8 +79,10 @@ class MLP:
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
-            # sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
-            # sys.stdout.flush()
+            # update learning rate - alpha 
+            self.updateAlpha(i)
+            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
+            sys.stdout.flush()
         print('')
             
     def makeValidationSets(self, x, y, setSize = 0.2):
@@ -127,6 +130,10 @@ class MLP:
             z = np.matmul(x, w)
             x = self.activation.call(z)
         return np.matmul(x, self.weights[-1])
+
+    def updateAlpha(self, epoch):
+        if epoch % 3 == 0:
+            self.alpha *= self.gamma
 
     def backprop(self, a, z, y):
         derivativeChain = self.lossFunction.derivative(a[-1], y)
