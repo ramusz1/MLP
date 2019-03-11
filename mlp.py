@@ -14,8 +14,8 @@ class MLP:
             activation,
             lossFunction = functions.MSE(),
             usesBias = False,
-            alpha = 0.01,
-            eta = 0.9,
+            alpha = 0.1,
+            eta = 0.5,
             batchSize = 32,
             maxIter = 500):
 
@@ -29,7 +29,6 @@ class MLP:
         self.activation = activation
         self.lossFunction = lossFunction
         self.__initWeights()
-        assert len(self.activation) == len(self.weights)
         self.__initMomentum()
         if self.usesBias:
             self.__initBias()
@@ -76,10 +75,11 @@ class MLP:
             loss = self.trainEpoch(x,oneHotY)
             pred_val = self.predict(x_val)
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
+            print(loss, loss_val, loss - loss_val)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
-            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
-            sys.stdout.flush()
+            # sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
+            # sys.stdout.flush()
         print('')
             
     def makeValidationSets(self, x, y, setSize = 0.2):
@@ -112,22 +112,27 @@ class MLP:
         zList = []
         for i in range(self.layersCount-1):
             aList.append(x)
-            z = np.matmul(x, self.weights[i])
+            x = np.matmul(x, self.weights[i])
             if self.usesBias:
-                z = z + self.bias[i]
-            x = self.activation[i].call(z)
-            zList.append(z)
+                x = x + self.bias[i]
+            zList.append(x)
+            if i < self.layersCount - 2:
+                x = self.activation.call(x)
 
         aList.append(x)
         return aList, zList
+    
+    def predict(self, x):
+        for w in self.weights[:-1]:
+            z = np.matmul(x, w)
+            x = self.activation.call(z)
+        return np.matmul(x, self.weights[-1])
 
     def backprop(self, a, z, y):
         derivativeChain = self.lossFunction.derivative(a[-1], y)
         deltas = []
         biasDeltas = []
         for l in range(1, self.layersCount):
-            # activation function backprop
-            derivativeChain = derivativeChain * self.activation[-l].derivative(z[-l])
             # addition backprop
             # empty
             # bias gradient is ready
@@ -141,6 +146,8 @@ class MLP:
             if l < self.layersCount - 1:
                 derivativeChain = np.matmul(derivativeChain, self.weights[-l].T)
                 # debug print('X shape' , z[-l-1].shape, 'vs', derivativeChain.shape)
+                # activation function backprop
+                derivativeChain = derivativeChain * self.activation.derivative(z[-l-1])
 
         return deltas, biasDeltas
 
@@ -155,24 +162,7 @@ class MLP:
             if self.usesBias:
                 self.biasMomentum[i] = self.eta * self.biasMomentum[i] + (1 - self.eta) * biasDeltas[-i-1]
                 self.bias[i] -= self.alpha * self.biasMomentum[i]
-            # print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(weightDeltas[-i-1])))
-
-    #forward bez zapisywania, wybierana jest klasa z największym prawd.
-    def predictLabel(self, x):
-        for w, activation in zip(self.weights, self.activation):
-            z = np.matmul(x, w)
-            x = activation.call(z)
-        if(x.ndim >1):
-            out = np.argmax(x, axis = 1)
-        else:
-            out = np.argmax(x)
-        return out
-    
-    def predict(self, x):
-        for w, activation in zip(self.weights, self.activation):
-            z = np.matmul(x, w)
-            x = activation.call(z)
-        return x
+            #print( 'l2 norm of {}\'th weights delta : {}'.format(i, np.linalg.norm(weightDeltas[-i-1])))
         
     def accuracy(self, X, Y):
         prediction = self.predictLabel(X)
@@ -180,3 +170,11 @@ class MLP:
         n = len(Y)
         return suma/n
 
+    #forward bez zapisywania, wybierana jest klasa z największym prawd.
+    def predictLabel(self, x):
+        x = self.predict(x)
+        if(x.ndim >1):
+            out = np.argmax(x, axis = 1)
+        else:
+            out = np.argmax(x)
+        return out

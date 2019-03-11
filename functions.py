@@ -1,16 +1,32 @@
 import numpy as np
 
+class identity:
+
+    def call(self, x):
+        return x
+
+    def derivative(self, x):
+        return 1
+
 class softmax:
 
     def call(self, x):
-        e_x = np.exp(x - np.max(x))
+        e_x = np.exp(x - np.expand_dims(np.max(x, axis = 1), axis = 1))
+        assert np.sum(np.expand_dims(e_x.sum(axis=1), axis = 1)) > 0
         return e_x / np.expand_dims(e_x.sum(axis=1), axis = 1)
 
     def derivative(self, x):
-        # 50% sure this is good
+        raise NotImplemented()
+        '''
+        # this produces some kind of jacobian, what next?
         sm = self.call(x)
+        # print('sm', sm)
         summed = np.expand_dims(np.sum(x, axis = 1), axis = 1)
-        return - sm * summed + sm
+        this gives vector on ones
+        jacobian = ???
+        # print('summed', summed)
+        return - sm * summed + sm this gives 0 in theory 
+        '''
 
 class sigmoid:
 
@@ -29,13 +45,15 @@ class relu:
     def derivative(self, x):
         return (x > 0).astype(int)
 
-class crossEntropy:
+class crossEntropyWithSoftmax:
 
     def call(self, pred, y):
-        return - np.sum(y * np.log(pred))
+        sm = softmax().call(pred)
+        return - np.sum(y * np.log(sm)) / len(y)
 
     def derivative(self, pred, y):
-        return - y / pred
+        sm = softmax().call(pred)
+        return sm - y / len(y)
 
 class MSE:
 
@@ -43,4 +61,6 @@ class MSE:
         return 1/len(y) * np.sum((y-pred)**2)
 
     def derivative(self, pred, y):
-        return (pred - y) / len(y)
+        tmp = 1 / len(y) * (pred - y) * pred
+        print(tmp)
+        return tmp

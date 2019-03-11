@@ -31,12 +31,26 @@ test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
+# sigmoid + softmax + cross entropy
+mlp = MLP(
+    layers = [inputSize, 64, outputSize],
+    activation = fn.sigmoid(),
+    lossFunction = fn.crossEntropyWithSoftmax(),
+    alpha = 0.01, 
+    batchSize = 32,
+    maxIter = 1000,
+    usesBias = True)
+
+'''
+# MSE with sigmoid
 mlp = MLP(
     layers = [inputSize, 16, outputSize],
     activation = [fn.sigmoid(), fn.sigmoid()],
     lossFunction = fn.MSE(),
     maxIter = 1000,
-    usesBias = True)
+    usesBias = True,
+    )
+'''
 
 # 2 run options:
 # 1. step by step mode with neural network graph
