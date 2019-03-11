@@ -30,10 +30,13 @@ class MLP:
         self.maxIter = maxIter
         self.activation = activation
         self.lossFunction = lossFunction
+        self.alphaUpdateTiming = 10
+        self.minAlpha = 0.000001
         self.__initWeights()
         self.__initMomentum()
         if self.usesBias:
             self.__initBias()
+
 
     def __initWeights(self):
         self.weights = []
@@ -66,15 +69,15 @@ class MLP:
             fig.draw()
             input('epoch: {}'.format(i+1))
 
-    def train(self, x, y, plotLoss = False):
-        x, y, x_val, y_val = self.makeValidationSets(x,y)
+    def train(self, x, y, x_val, y_val, plotLoss = False):
+        # x, y, x_val, y_val = self.makeValidationSets(x,y)
         oneHotY = self.mapClasses(y)
         oneHotYVal = self.mapClasses(y_val)
         
         if plotLoss:
             lossPlot = LossPlotter(self.maxIter)
         for i in range(self.maxIter):
-            loss = self.trainEpoch(x,oneHotY)
+            loss = self.trainEpoch(x, oneHotY)
             pred_val = self.predict(x_val)
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
             if plotLoss:
@@ -132,7 +135,7 @@ class MLP:
         return np.matmul(x, self.weights[-1])
 
     def updateAlpha(self, epoch):
-        if epoch % 3 == 0:
+        if self.alpha > self.minAlpha and epoch % self.alphaUpdateTiming == 0:
             self.alpha *= self.gamma
 
     def backprop(self, a, z, y):

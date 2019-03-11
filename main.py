@@ -27,16 +27,17 @@ test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.100.
 # it's problematic in class maping later on
 
 training_y = training_y - np.min(training_y)
-test_y = test_y - np.min(test_y)
+test_y = test_y - np.min(test_y) 
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
 # sigmoid + softmax + cross entropy
 mlp = MLP(
-    layers = [inputSize, 32, 16, outputSize],
+    layers = [inputSize, 64, 32, 32, outputSize],
     activation = fn.relu(),
     lossFunction = fn.crossEntropyWithSoftmax(),
     alpha = 0.09,
+    gamma = 0.95,
     batchSize = 32,
     maxIter = 2000,
     usesBias = True)
@@ -77,7 +78,7 @@ args = parser.parse_args()
 if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y)
 else:
-    mlp.train(training_x, training_y, plotLoss = args.plot_loss)
+    mlp.train(training_x, training_y, test_x, test_y, plotLoss = args.plot_loss)
     print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
     print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
 
