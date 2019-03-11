@@ -33,12 +33,12 @@ outputSize = len(np.unique(training_y))
 
 # sigmoid + softmax + cross entropy
 mlp = MLP(
-    layers = [inputSize, 64, outputSize],
-    activation = fn.sigmoid(),
+    layers = [inputSize, 32, 16, outputSize],
+    activation = fn.relu(),
     lossFunction = fn.crossEntropyWithSoftmax(),
-    alpha = 0.01, 
+    alpha = 0.09,
     batchSize = 32,
-    maxIter = 1000,
+    maxIter = 2000,
     usesBias = True)
 
 '''

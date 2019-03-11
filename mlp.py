@@ -16,6 +16,7 @@ class MLP:
             usesBias = False,
             alpha = 0.1,
             eta = 0.5,
+            gamma = 0.9, 
             batchSize = 32,
             maxIter = 500):
 
@@ -75,7 +76,6 @@ class MLP:
             loss = self.trainEpoch(x,oneHotY)
             pred_val = self.predict(x_val)
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
-            print(loss, loss_val, loss - loss_val)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
             # sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
