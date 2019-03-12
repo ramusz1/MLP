@@ -26,24 +26,16 @@ def mapClasses(y, yRange):
     oneHotVectors[np.arange(len(y)), y] = 1
     return oneHotVectors
 
-# prepare datasets
-#x, y = loadIris()
 training_x, training_y = loadDataset('datasets/classification/data.three_gauss.train.100.csv')
 test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.100.csv')
-
-# iris uses labels starting from 0, downloaded datasets use labels starting from 1
-# it's problematic in class maping later on
 
 training_y = training_y - np.min(training_y)
 test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-
 training_y_one_hot = mapClasses(training_y, outputSize)
 test_y_one_hot = mapClasses(test_y, outputSize)
-
-# sigmoid + softmax + cross entropy
 
 mlp = MLP(
     layers = [
