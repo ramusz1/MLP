@@ -1,13 +1,5 @@
 import numpy as np
 
-class identity:
-
-    def call(self, x):
-        return x
-
-    def derivative(self, x):
-        return 1
-
 class softmax:
 
     def call(self, x):
@@ -17,16 +9,6 @@ class softmax:
 
     def derivative(self, x):
         raise NotImplemented()
-        '''
-        # this produces some kind of jacobian, what next?
-        sm = self.call(x)
-        # print('sm', sm)
-        summed = np.expand_dims(np.sum(x, axis = 1), axis = 1)
-        this gives vector on ones
-        jacobian = ???
-        # print('summed', summed)
-        return - sm * summed + sm this gives 0 in theory 
-        '''
 
 class sigmoid:
 

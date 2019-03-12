@@ -5,6 +5,7 @@ import pandas as pd
 from visuals.setVisualization import visualizeSet
 
 import functions as fn
+from layer import *
 
 def loadIris():
     data = datasets.load_iris()
@@ -12,11 +13,18 @@ def loadIris():
     y = data['target']
     return x, y 
 
+
 def loadDataset(filename):
     dataset = pd.read_csv(filename)
     x = dataset.drop(columns = ['cls']).values
     y = dataset['cls'].values
-    return x, y
+    return x, y 
+
+# z wektora robi macierz jedynek
+def mapClasses(y, yRange):
+    oneHotVectors = np.zeros((len(y), yRange))
+    oneHotVectors[np.arange(len(y)), y] = 1
+    return oneHotVectors
 
 # prepare datasets
 #x, y = loadIris()
@@ -27,32 +35,31 @@ test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.100.
 # it's problematic in class maping later on
 
 training_y = training_y - np.min(training_y)
-test_y = test_y - np.min(test_y) 
+test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
+
+training_y = mapClasses(training_y, outputSize)
+test_y = mapClasses(test_y, outputSize)
+
+print(test_y)
+
 # sigmoid + softmax + cross entropy
+
 mlp = MLP(
-    layers = [inputSize, 64, 16, outputSize],
-    activation = fn.sigmoid(),
-    lossFunction = fn.crossEntropyWithSoftmax(),
-    alpha = 0.01,
-    gamma = 1,
+    layers = [
+        FullyConnected(inputSize, 16),
+        Activation(fn.sigmoid()),
+        FullyConnected(16, outputSize),
+    ],
+    lossFunction = Loss(fn.crossEntropyWithSoftmax()),
+    learningRate = 0.01,
+    lrDecay = 1,
     eta = 0.00,
     batchSize = 64,
-    maxIter = 700,
-    usesBias = True)
-
-'''
-# MSE with sigmoid
-mlp = MLP(
-    layers = [inputSize, 16, outputSize],
-    activation = [fn.sigmoid(), fn.sigmoid()],
-    lossFunction = fn.MSE(),
-    maxIter = 1000,
-    usesBias = True,
-    )
-'''
+    maxIter = 700
+)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
