@@ -16,8 +16,8 @@ class LossPlotter:
         self.lossList = []
 
     def drawFigure(self):
-        self.ax.set_ylim(self.minY, self.maxY) 
-        self.ax.set_xlim(0, self.maxXValue)
+        self.ax.set_ylim(self.minY, self.maxY)
+        self.ax.set_xlim(-self.maxXValue / 100, self.maxXValue)
         self.fig.canvas.draw()
         self.background = self.fig.canvas.copy_from_bbox(self.ax.bbox)
         self.points = self.ax.plot([], [], 'b')[0]

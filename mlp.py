@@ -15,7 +15,7 @@ class MLP:
             lossFunction = functions.MSE(),
             usesBias = False,
             alpha = 0.1,
-            eta = 0.5,
+            eta = 0.05,
             gamma = 0.99,
             batchSize = 32,
             maxIter = 500):
@@ -70,7 +70,6 @@ class MLP:
             input('epoch: {}'.format(i+1))
 
     def train(self, x, y, x_val, y_val, plotLoss = False):
-        # x, y, x_val, y_val = self.makeValidationSets(x,y)
         oneHotY = self.mapClasses(y)
         oneHotYVal = self.mapClasses(y_val)
         
@@ -82,19 +81,13 @@ class MLP:
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
+            print(self.alpha)
             # update learning rate - alpha 
             self.updateAlpha(i)
             sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
             sys.stdout.flush()
         print('')
             
-    def makeValidationSets(self, x, y, setSize = 0.2):
-        n = len(x)
-        ind = np.random.choice(range(n), int(np.round(n*setSize)))
-        x_val, y_val = x[ind], y[ind]
-        x, y = np.delete(x, ind, axis=0), np.delete(y, ind, axis=0)
-        return x, y, x_val, y_val
-        
     # z wektora robi macierz jedynek
     def mapClasses(self, y):
         oneHotVectors = np.zeros((len(y), self.layers[-1]))
