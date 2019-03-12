@@ -7,7 +7,7 @@ import sys
 
 class MLP:
 
-    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.9, batchSize = 32, maxIter = 1000):
+    def __init__(self, layers, usesBias = False, alpha = 0.01, eta = 0.5, batchSize = 8, maxIter = 1000):
         self.layers = layers
         self.layersCount = len(self.layers)
         self.usesBias = usesBias

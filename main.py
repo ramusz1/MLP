@@ -29,7 +29,9 @@ test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 64, 32, outputSize], usesBias = True)
+mlp = MLP([inputSize, 16, 16, 16, 8, outputSize], 
+    usesBias = True, maxIter = 5000, batchSize = 16,
+    alpha = 0.02)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
