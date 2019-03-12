@@ -95,6 +95,8 @@ class MLP:
 
     # returns loss of last training session
     def trainEpoch(self, x, y):
+        ind = np.random.permutation(np.arange(len(x)))
+        x, y = x[ind], y[ind]
         for i in range(0, len(x), self.batchSize):
             X, Y = x[i:i+self.batchSize], y[i:i+self.batchSize]
             a, z = self.forward(X)

@@ -34,6 +34,7 @@ class sigmoid:
         return 1 / (1 + np.exp(-x))
 
     def derivative(self, x):
+        # return 1
         return self.call(x) * (1 - self.call(x))
 
 class relu:
