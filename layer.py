@@ -31,20 +31,20 @@ class FullyConnected(Layer):
     def backprop(self, gradIn, learningRate, eta):
         # calculate deltas for bias and weight
         biasDelta = np.sum(gradIn, axis = 0)
-        self.updateBias(biasDelta)
+        self.updateBias(biasDelta, learningRate, eta)
         weightDelta = np.matmul(self.input.T, gradIn)
-        self.updateWeight(weightDelta)
+        self.updateWeight(weightDelta, learningRate, eta)
         return np.matmul(gradIn, self.weight.T)
 
     # momentum from
     # https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d
-    def updateWeight(self, weightDelta):
+    def updateWeight(self, weightDelta, learningRate, eta):
         self.weightMomentum = eta * self.weightMomentum + (1 - eta) * weightDelta
-        self.weight -= self.learningRate * self.weightMomentum
+        self.weight -= learningRate * self.weightMomentum
 
-    def updateBias(self, biasDelta):
+    def updateBias(self, biasDelta, learningRate, eta):
         self.biasMomentum = eta * self.biasMomentum + (1 - eta) * biasDelta
-        self.bias -= self.learningRate * self.biasMomentum
+        self.bias -= learningRate * self.biasMomentum
 
     
 class Activation(Layer):

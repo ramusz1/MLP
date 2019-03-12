@@ -40,10 +40,8 @@ inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
 
-training_y = mapClasses(training_y, outputSize)
-test_y = mapClasses(test_y, outputSize)
-
-print(test_y)
+training_y_one_hot = mapClasses(training_y, outputSize)
+test_y_one_hot = mapClasses(test_y, outputSize)
 
 # sigmoid + softmax + cross entropy
 
@@ -86,11 +84,11 @@ args = parser.parse_args()
 if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y)
 else:
-    mlp.train(training_x, training_y, test_x, test_y, plotLoss = args.plot_loss)
+    mlp.train(training_x, training_y_one_hot, test_x, test_y_one_hot, plotLoss = args.plot_loss)
     print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
     print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
 
 if args.show_set:
     if training_x.shape[1] != 2:
-        print('set visualization is only possible wneh there are 2 features')
+        print('set visualization is only possible when there are 2 features')
     visualizeSet(mlp, training_x, training_y)

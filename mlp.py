@@ -49,7 +49,7 @@ class MLP:
         x, y = x[ind], y[ind]
         for i in range(0, len(x), self.batchSize):
             X, Y = x[i:i+self.batchSize], y[i:i+self.batchSize]
-            self.trainingForward(X)
+            X = self.trainingForward(X)
             self.lossFunction.forwardWithSave(X, Y)
             self.backprop()
         return self.getLoss(x, y)
@@ -57,10 +57,11 @@ class MLP:
     def trainingForward(self, x):
         for l in self.layers:
             x = l.forwardWithSave(x)
+        return x
 
     def backprop(self):
         grad = self.lossFunction.backprop(1, self.learningRate, self.eta)
-        for l in rev(self.layers):
+        for l in reversed(self.layers):
             grad = l.backprop(grad, self.learningRate, self.eta)
 
     def predict(self, x):
@@ -75,15 +76,15 @@ class MLP:
 
     def updateLearningRate(self, epoch):
         if self.learningRate > self.minAlpha and epoch % self.learningRateUpdateTiming == 0:
-            self.learningRate *= self.gamma
+            self.learningRate *= self.lrDecay
+
+    #forward bez zapisywania, wybierana jest klasa z największym prawd.
+    def predictLabel(self, x):
+        x = self.predict(x)
+        return np.argmax(x, axis = 1)
 
     def accuracy(self, X, Y):
         prediction = self.predictLabel(X)
         suma = sum(prediction == Y)
         n = len(Y)
         return suma/n
-
-    #forward bez zapisywania, wybierana jest klasa z największym prawd.
-    def predictLabel(self, x):
-        x = self.predict(x)
-        return np.argmax(x, axis = 1)
