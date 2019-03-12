@@ -33,8 +33,8 @@ outputSize = len(np.unique(training_y))
 
 # sigmoid + softmax + cross entropy
 mlp = MLP(
-    layers = [inputSize, 8, 8, 6, outputSize],
-    activation = fn.sigmoid(),
+    layers = [inputSize, 32, 16, outputSize],
+    activation = fn.relu(),
     lossFunction = fn.crossEntropyWithSoftmax(),
     alpha = 0.09,
     gamma = 0.99,

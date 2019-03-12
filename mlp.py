@@ -81,7 +81,6 @@ class MLP:
             loss_val = self.lossFunction.call(pred_val,oneHotYVal)
             if plotLoss:
                 lossPlot.plotLive(i,[loss,loss_val])
-            print(self.alpha)
             # update learning rate - alpha 
             self.updateAlpha(i)
             sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))

@@ -14,11 +14,11 @@ def visualizeSet(model, data, label):
     # plt.ylim(*yRange)
     origin = (xRange[0] * resolution, yRange[0] * resolution)
     plt.imshow(spaceDivision,
-        cmap = 'Set2',
+        cmap = 'Set1',
         origin = 'lower',
         alpha = 0.5, 
         extent = [xRange[0], xRange[1], yRange[0], yRange[1]])
-    plt.scatter(x, y, c = label, cmap = 'Set2')
+    plt.scatter(x, y, c = label, cmap = 'Set1')
 
     plt.show()
 
