@@ -77,6 +77,20 @@ with tf.Session() as sess:
     grad_t = tf.gradients([output_t], [b_t])
     print('bGrad_t:', sess.run(grad_t))
 
+    # cross entropy with softmax gradients
+    print('cross entropy tests')
+    ce = lr.Loss(fn.crossEntropyWithSoftmax())
+    loss = ce.forwardWithSave(x, y)
+
+    loss_t = tf.losses.softmax_cross_entropy(y_t, x_t)
+    print('loss:', loss)
+    print('loss_t:', sess.run(loss_t))
+
+    grad = ce.backprop(1, 0, 0)
+    grad_t = tf.gradients([loss_t], [x_t])
+    print('grad:', grad)
+    print('grad_t:', sess.run(grad_t))
+
     # mse gradients
     # does not work :|
     print('MMMMSSSSEEE')
@@ -87,7 +101,7 @@ with tf.Session() as sess:
     y_t = tf.constant(y)
 
     loss_t = tf.losses.mean_squared_error(y_t, x_t)
-    print('loss:', np.sum(loss))
+    print('loss:', loss)
     print('loss_t:', sess.run(loss_t))
 
     grad = mse.backprop(1, 0, 0)
@@ -95,6 +109,3 @@ with tf.Session() as sess:
     print('grad:', grad)
     print('grad_t:', sess.run(grad_t))
 
-    # cross entropy with softmax gradients
-    ce = lr.Loss(fn.crossEntropyWithLoss())
-    ce.forwardWithSave(x, y)
