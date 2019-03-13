@@ -41,8 +41,7 @@ class crossEntropyWithSoftmax:
 class MSE:
 
     def call(self, pred, y):
-        return 1/len(y) * np.sum((y-pred)**2)
+        return 1/pred.shape[1] * np.sum((y-pred)**2)
 
     def derivative(self, pred, y):
-        tmp = 1 / len(y) * (pred - y)
-        return tmp
+        return 2/pred.shape[1] * (pred - y)

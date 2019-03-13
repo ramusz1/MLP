@@ -37,6 +37,7 @@ class FullyConnected(Layer):
         print('weightGrad', weightDelta)
         grad_out = np.matmul(gradIn, self.weight.T)
         self.updateWeight(weightDelta, learningRate, eta)
+        print('xGrad', grad_out)
         return grad_out
 
     # momentum from
