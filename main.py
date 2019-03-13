@@ -4,32 +4,52 @@ from mlp import MLP
 import pandas as pd
 from visuals.setVisualization import visualizeSet
 
+import functions as fn
+from layer import *
+
 def loadIris():
     data = datasets.load_iris()
     x = data['data']
     y = data['target']
     return x, y 
 
+
 def loadDataset(filename):
     dataset = pd.read_csv(filename)
     x = dataset.drop(columns = ['cls']).values
     y = dataset['cls'].values
-    return x, y
+    return x, y 
 
-# prepare datasets
-#x, y = loadIris()
+# z wektora robi macierz jedynek
+def mapClasses(y, yRange):
+    oneHotVectors = np.zeros((len(y), yRange))
+    oneHotVectors[np.arange(len(y)), y] = 1
+    return oneHotVectors
+
 training_x, training_y = loadDataset('datasets/classification/data.three_gauss.train.100.csv')
 test_x, test_y = loadDataset('datasets/classification/data.three_gauss.test.100.csv')
-
-# iris uses labels starting from 0, downloaded datasets use labels starting from 1
-# it's problematic in class maping later on
 
 training_y = training_y - np.min(training_y)
 test_y = test_y - np.min(test_y)
 inputSize = training_x.shape[1]
 outputSize = len(np.unique(training_y))
 
-mlp = MLP([inputSize, 64, 32, 16, outputSize], usesBias = True)
+training_y_one_hot = mapClasses(training_y, outputSize)
+test_y_one_hot = mapClasses(test_y, outputSize)
+
+mlp = MLP(
+    layers = [
+        FullyConnected(inputSize, 16),
+        Activation(fn.sigmoid()),
+        FullyConnected(16, outputSize),
+    ],
+    lossFunction = Loss(fn.crossEntropyWithSoftmax()),
+    learningRate = 0.01,
+    lrDecay = 1,
+    eta = 0.00,
+    batchSize = 64,
+    maxIter = 700
+)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -56,11 +76,11 @@ args = parser.parse_args()
 if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y)
 else:
-    mlp.train(training_x, training_y, plotLoss = args.plot_loss)
+    mlp.train(training_x, training_y_one_hot, test_x, test_y_one_hot, plotLoss = args.plot_loss)
     print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
     print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
 
 if args.show_set:
     if training_x.shape[1] != 2:
-        print('set visualization is only possible wneh there are 2 features')
+        print('set visualization is only possible when there are 2 features')
     visualizeSet(mlp, training_x, training_y)

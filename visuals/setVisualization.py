@@ -14,10 +14,11 @@ def visualizeSet(model, data, label):
     # plt.ylim(*yRange)
     origin = (xRange[0] * resolution, yRange[0] * resolution)
     plt.imshow(spaceDivision,
-        cmap = 'Set2',
+        cmap = 'Set1',
         origin = 'lower',
+        alpha = 0.5, 
         extent = [xRange[0], xRange[1], yRange[0], yRange[1]])
-    plt.scatter(x, y, c = label, alpha = 0.5)
+    plt.scatter(x, y, c = label, cmap = 'Set1')
 
     plt.show()
 
@@ -26,10 +27,10 @@ def getDividedSpace(model, xRange, yRange, resolution):
     height = int((yRange[1] - yRange[0]) * resolution)
     minX, minY = xRange[0], yRange[0]
     image = np.zeros(shape=(height, width))
-    for x, row in enumerate(image):
-        for y, _ in enumerate(row):
-            image[x][y] = model.predictLabel(
-                [x/resolution + minX, y/resolution + minY])
+    for y, row in enumerate(image):
+        for x, _ in enumerate(row):
+            image[y][x] = model.predictLabel(
+                [[x/resolution + minX, y/resolution + minY]])
 
     return image
 
