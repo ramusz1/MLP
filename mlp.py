@@ -30,6 +30,16 @@ class MLP:
         self.learningRateUpdateTiming = 10
         self.minAlpha = 0.000001
 
+    def presentationOfTraining(self, x, y):
+        print("presentation mode, press enter to go to next epoch results")
+        fig = NetworkGraph(self)
+        fig.draw()
+        for i in range(self.maxIter):
+            self.trainEpoch(x, y)
+            if i % 100 == 0:
+                fig.draw()
+                input('epoch: {}'.format(i))
+
     def train(self, x, y, xVal, yVal, plotLoss = False):
         if plotLoss:
             lossPlot = LossPlotter(self.maxIter)
@@ -88,3 +98,10 @@ class MLP:
         suma = sum(prediction == Y)
         n = len(Y)
         return suma/n
+
+    def getDrawable(self):
+        fullyConnected = list(filter(lambda layer: type(layer) is FullyConnected, self.layers))
+        layersWidth = list(map(lambda fc: fc.weights.shape[0], fullyConnected))
+        layersWidth.append(fullyConnected[-1].weights.shape[1]) # that last layer
+        allWeights = list(map(lambda fc: fc.weights, fullyConnected))
+        return layersWidth, allWeights

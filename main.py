@@ -39,12 +39,12 @@ test_y_one_hot = mapClasses(test_y, outputSize)
 
 mlp = MLP(
     layers = [
-        FullyConnected(inputSize, 16),
+        FullyConnected(inputSize, 8),
         Activation(fn.sigmoid()),
-        FullyConnected(16, outputSize),
+        FullyConnected(8, outputSize),
     ],
     lossFunction = Loss(fn.crossEntropyWithSoftmax()),
-    learningRate = 0.01,
+    learningRate = 0.1,
     lrDecay = 1,
     eta = 0.00,
     batchSize = 64,
@@ -74,7 +74,7 @@ args = parser.parse_args()
 
 
 if args.step_by_step:
-    mlp.presentationOfTraining(training_x, training_y)
+    mlp.presentationOfTraining(training_x, training_y_one_hot)
 else:
     mlp.train(training_x, training_y_one_hot, test_x, test_y_one_hot, plotLoss = args.plot_loss)
     print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
