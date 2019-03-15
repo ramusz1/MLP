@@ -10,14 +10,14 @@ from mlp import MLP
 from layer import *
 import csv
 
-def gridSearch(n, layers, alpha_vec, batchSizeVec, eta_vec, tr_x,tr_y,ts_x,ts_y):
+def gridSearch(n, layersSet, alpha_vec, batchSizeVec, eta_vec, tr_x,tr_y,ts_x,ts_y):
     error = []
-    for layer in layers:
+    for layers in layersSet:
         for alpha in alpha_vec:
             for batch in batchSizeVec:
                 for eta in eta_vec:
                     mlp = MLP(
-                              layers=layer,
+                              layers=layers,
                               lossFunction=Loss(fn.crossEntropyWithSoftmax()),
                               learningRate=alpha,
                               lrDecay=0.9,
@@ -28,15 +28,12 @@ def gridSearch(n, layers, alpha_vec, batchSizeVec, eta_vec, tr_x,tr_y,ts_x,ts_y)
                     mlp.train(tr_x, tr_y, ts_x, ts_y, plotLoss=True)
                     acc_tr = mlp.accuracy(tr_x, tr_y)
                     acc_ts = mlp.accuracy(ts_x, ts_y) 
-                    log = "layers"+ '_'.join([str(i) for i in layer]) + \
+                    log = "layers"+ '_'.join([str(i) for i in layers]) + \
                           "alpha"+ str(alpha) + \
                           "batch"+ str(batch) + \
                           "eta"  + str(eta)
                     error.append([acc_tr, acc_ts])
                     
-                    try:
-                        file = open(log+'.csv', 'a',newline='')
-                    except IOError:
-                        file = open(log+'.csv', 'w',newline='')
-                    wr = csv.writer(file)
-                    wr.writerows(error)
+                    with open(log + '.csv', 'a+',newline='') as file:
+                      wr = csv.writer(file)
+                      wr.writerows(error)

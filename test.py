@@ -94,6 +94,7 @@ with tf.Session() as sess:
     # mse gradients
     # does not work :|
     print('MMMMSSSSEEE')
+    y = -4 * y
     mse = lr.Loss(fn.MSE())
     loss = mse.forwardWithSave(x, y)
 
