@@ -29,8 +29,11 @@ class MLP:
         self.lossFunction = lossFunction
         self.learningRateUpdateTiming = 10
         self.minAlpha = 0.000001
+        self.bestLayer = None
+
 
     def train(self, x, y, xVal, yVal, plotLoss = False):
+        self.bestLayer = self.layers, None
         if plotLoss:
             lossPlot = LossPlotter(self.maxIter)
         for i in range(self.maxIter):
@@ -38,6 +41,10 @@ class MLP:
             loss_val = self.getLoss(xVal, yVal)
             if plotLoss:
                 lossPlot.plotLive(i, [loss,loss_val])
+            self.updateBest(loss_val)              
+            if(self.earlyStop(loss_val)):
+                break  
+
             self.updateLearningRate(i)
             sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
             sys.stdout.flush()
@@ -88,3 +95,17 @@ class MLP:
         suma = sum(prediction == Y)
         n = len(Y)
         return suma/n
+    
+    def updateBest(self,loss):
+        if(self.bestLayer[1] == None or self.bestLayer[1]>loss):
+            self.bestLayer = self.layers, loss
+    
+    def earlyStop(self, curr_loss):
+        if (self.bestLayer[1]*2 < curr_loss):
+            self.layers = self.bestLayer[0]
+            print('early stop')
+            return True
+        return False
+            
+            
+        
