@@ -13,6 +13,10 @@ class Layer:
 
     def forward(self, input):
         raise NotImplemented
+        
+    def __str__(self):
+        return ''
+        
 
 
 class FullyConnected(Layer):
@@ -31,13 +35,13 @@ class FullyConnected(Layer):
     def backprop(self, gradIn, learningRate, eta):
         # calculate deltas for bias and weight
         biasDelta = np.sum(gradIn, axis = 0)
-        print('biasGrad', biasDelta)
+#        print('biasGrad', biasDelta)
         self.updateBias(biasDelta, learningRate, eta)
         weightDelta = np.matmul(self.input.T, gradIn)
-        print('weightGrad', weightDelta)
+#        print('weightGrad', weightDelta)
         grad_out = np.matmul(gradIn, self.weight.T)
         self.updateWeight(weightDelta, learningRate, eta)
-        print('xGrad', grad_out)
+#        print('xGrad', grad_out)
         return grad_out
 
     # momentum from
@@ -49,7 +53,9 @@ class FullyConnected(Layer):
     def updateBias(self, biasDelta, learningRate, eta):
         self.biasMomentum = eta * self.biasMomentum + (1 - eta) * biasDelta
         self.bias -= learningRate * self.biasMomentum
-
+        
+    def __str__(self):
+        return str(self.weight.shape)
     
 class Activation(Layer):
 
@@ -62,6 +68,9 @@ class Activation(Layer):
 
     def backprop(self, gradIn, learningRate, eta):
         return self.func.derivative(self.input) * gradIn
+    
+    def __str__(self):
+        return str(self.func)
 
 class Loss(Layer):
 
@@ -79,3 +88,5 @@ class Loss(Layer):
 
     def backprop(self, gradIn, learningRate, eta):
         return self.func.derivative(self.prediction, self.y) * gradIn
+    def __str__(self):
+        return str(self.func)

@@ -9,6 +9,9 @@ class softmax:
 
     def derivative(self, x):
         raise NotImplemented()
+    
+    def __str__(self):
+        return 'softmax'
 
 class sigmoid:
 
@@ -18,6 +21,9 @@ class sigmoid:
     def derivative(self, x):
         # return 1
         return self.call(x) * (1 - self.call(x))
+    
+    def __str__(self):
+        return 'sigmoid'
 
 class relu:
 
@@ -27,6 +33,20 @@ class relu:
 
     def derivative(self, x):
         return (x > 0).astype(int)
+    
+    def __str__(self):
+        return 'relu'
+    
+class tanh:
+    
+    def call(self, x):
+        return np.tanh(x)
+
+    def derivative(self, x):
+        return 1.0 - np.tanh(x)**2
+    
+    def __str__(self):
+        return 'tanh'
 
 class crossEntropyWithSoftmax:
 
@@ -37,11 +57,17 @@ class crossEntropyWithSoftmax:
     def derivative(self, pred, y):
         sm = softmax().call(pred)
         return (sm - y)/ len(y)
+    
+    def __str__(self):
+        return 'cross-ent'
 
 class MSE:
 
     def call(self, pred, y):
-        return 1/pred.shape[1] * np.sum((y-pred)**2)
+        return np.mean((y-pred)**2)
 
     def derivative(self, pred, y):
-        return 2/pred.shape[1] * (pred - y)
+        return 2/(pred.shape[0]*pred.shape[1])*(pred - y)
+
+    def __str__(self):
+        return 'mse'
