@@ -36,9 +36,8 @@ class MLP:
         fig.draw()
         for i in range(self.maxIter):
             self.trainEpoch(x, y)
-            if i % 100 == 0:
-                fig.draw()
-                input('epoch: {}'.format(i))
+            fig.draw()
+            input('epoch: {}'.format(i))
 
     def train(self, x, y, xVal, yVal, plotLoss = False):
         if plotLoss:

@@ -44,11 +44,11 @@ mlp = MLP(
         FullyConnected(8, outputSize),
     ],
     lossFunction = Loss(fn.crossEntropyWithSoftmax()),
-    learningRate = 0.1,
+    learningRate = 0.5,
     lrDecay = 1,
     eta = 0.00,
     batchSize = 64,
-    maxIter = 700
+    maxIter = 200
 )
 
 # 2 run options:
@@ -77,8 +77,9 @@ if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y_one_hot)
 else:
     mlp.train(training_x, training_y_one_hot, test_x, test_y_one_hot, plotLoss = args.plot_loss)
-    print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
-    print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+
+print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
+print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
 
 if args.show_set:
     if training_x.shape[1] != 2:

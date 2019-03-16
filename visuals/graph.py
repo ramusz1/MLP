@@ -17,7 +17,6 @@ class NetworkGraph:
     
     def draw(self):
         layers, weights = self.network.getDrawable()
-        print(weights)
         self.drawNodes(layers)
         self.drawEdges(layers, weights)
         self.ax.clear()
