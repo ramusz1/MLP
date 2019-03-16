@@ -48,9 +48,9 @@ class MLP:
             if plotLoss:
                 lossPlot.plotLive(i, [loss,loss_val])
             self.updateLearningRate(i)
-            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
-            sys.stdout.flush()
-        print('')
+            #sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
+            #sys.stdout.flush()
+        #print('')
 
     # returns loss of last training session
     def trainEpoch(self, x, y):

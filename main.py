@@ -3,6 +3,7 @@ from sklearn import datasets
 from mlp import MLP
 import pandas as pd
 from visuals.setVisualization import visualizeSet
+from gridSearch import runGridSearch
 
 import functions as fn
 from layer import *
@@ -37,19 +38,30 @@ outputSize = len(np.unique(training_y))
 training_y_one_hot = mapClasses(training_y, outputSize)
 test_y_one_hot = mapClasses(test_y, outputSize)
 
+hiddenSize = 16
+
 mlp = MLP(
     layers = [
-        FullyConnected(inputSize, 8),
-        Activation(fn.sigmoid()),
-        FullyConnected(8, outputSize),
+        FullyConnected(inputSize, hiddenSize),
+        Activation(fn.relu()),
+        FullyConnected(hiddenSize, hiddenSize),
+        Activation(fn.relu()),
+        FullyConnected(hiddenSize, hiddenSize),
+        Activation(fn.relu()),
+        FullyConnected(hiddenSize, outputSize)
     ],
     lossFunction = Loss(fn.crossEntropyWithSoftmax()),
-    learningRate = 0.5,
+    learningRate = 0.05,
     lrDecay = 1,
-    eta = 0.00,
-    batchSize = 64,
-    maxIter = 200
+    eta = 0.1,
+    batchSize = 36,
+    maxIter = 900
 )
+for x in range(50):
+    mlp.train(training_x, training_y_one_hot, test_x, test_y_one_hot, plotLoss = False)
+    print('{},{},{}'.format(hiddenSize, mlp.accuracy(training_x, training_y), mlp.accuracy(test_x,test_y)))
+
+exit(0)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -70,8 +82,15 @@ parser.add_argument('--plot_loss', default=False, action='store_true',
 parser.add_argument('--show_set', default=False, action='store_true',
                    help='show resulting division of the training set')
 
+parser.add_argument('--grid_search', default=False, action='store_true',
+                   help='run grid search')
+
 args = parser.parse_args()
 
+
+if args.grid_search:
+    runGridSearch(training_x, training_y_one_hot, training_y, test_x, test_y_one_hot, test_y, inputSize, outputSize)
+    exit(0)
 
 if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y_one_hot)
@@ -80,6 +99,7 @@ else:
 
 print('Accuracy on training set: ', mlp.accuracy(training_x, training_y))
 print('Accuracy on test set: ', mlp.accuracy(test_x,test_y))
+
 
 if args.show_set:
     if training_x.shape[1] != 2:
