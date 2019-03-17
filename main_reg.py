@@ -30,7 +30,7 @@ mlp = MLP(
     lrDecay = 1,
     eta = 0.05,
     batchSize = 64,
-    maxIter = 200
+    maxIter = 1000
 )
 
 # 2 run options:
@@ -54,7 +54,7 @@ parser.add_argument('--show_set', default=False, action='store_true',
 
 args = parser.parse_args()
 
-visualizeFunction(mlp, training_x, training_y)
+visualizeFunction(mlp, training_x, training_x)
 
 if args.step_by_step:
     mlp.presentationOfTraining(training_x, training_y)
@@ -62,4 +62,4 @@ else:
     mlp.train(training_x, training_y, test_x, test_y, plotLoss = args.plot_loss)
 
 if args.show_set:
-    visualizeFunction(mlp, training_x, training_y)
+    visualizeFunction(mlp, training_x, training_x)

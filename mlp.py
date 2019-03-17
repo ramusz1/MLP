@@ -29,8 +29,21 @@ class MLP:
         self.lossFunction = lossFunction
         self.learningRateUpdateTiming = 10
         self.minAlpha = 0.000001
+        self.bestLayer = None
+        self.worseEpochs = 0
+
+
+    def presentationOfTraining(self, x, y):
+        print("presentation mode, press enter to go to next epoch results")
+        fig = NetworkGraph(self)
+        fig.draw()
+        for i in range(self.maxIter):
+            self.trainEpoch(x, y)
+            fig.draw()
+            input('epoch: {}'.format(i))
 
     def train(self, x, y, xVal, yVal, plotLoss = False):
+        self.bestLayer = self.layers, None
         if plotLoss:
             lossPlot = LossPlotter(self.maxIter)
         for i in range(self.maxIter):
@@ -38,10 +51,14 @@ class MLP:
             loss_val = self.getLoss(xVal, yVal)
             if plotLoss:
                 lossPlot.plotLive(i, [loss,loss_val])
+            self.updateBest(loss_val)              
+            if(self.earlyStop(loss_val)):
+                break  
+
             self.updateLearningRate(i)
-            sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
-            sys.stdout.flush()
-        print('')
+            #sys.stdout.write("\r Learning progress: %d%%" % np.round(i/self.maxIter*100))
+            #sys.stdout.flush()
+        #print('')
 
     # returns loss of last training session
     def trainEpoch(self, x, y):
@@ -88,3 +105,26 @@ class MLP:
         suma = sum(prediction == Y)
         n = len(Y)
         return suma/n
+
+    def getDrawable(self):
+        fullyConnected = list(filter(lambda layer: type(layer) is FullyConnected, self.layers))
+        layersWidth = list(map(lambda fc: fc.weights.shape[0], fullyConnected))
+        layersWidth.append(fullyConnected[-1].weights.shape[1]) # that last layer
+        allWeights = list(map(lambda fc: fc.weights, fullyConnected))
+        return layersWidth, allWeights
+    
+    def updateBest(self,loss):
+        if(self.bestLayer[1] == None or self.bestLayer[1]>loss):
+            self.bestLayer = self.layers, loss
+    
+    def earlyStop(self, curr_loss):
+        if self.bestLayer[1] < curr_loss:
+            self.worseEpochs += 1
+        else :
+            self.worseEpochs = 0
+
+        if self.worseEpochs > 5:
+            self.layers = self.bestLayer[0]
+            # print('early stop')
+            return True
+        return False
