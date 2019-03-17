@@ -16,17 +16,25 @@ class Layer:
         
     def __str__(self):
         return ''
-        
+
+    def reset(self):
+        return
 
 
 class FullyConnected(Layer):
 
     def __init__(self, inputSize, outputSize):
         super().__init__()
-        self.weights = np.random.randn(inputSize, outputSize)
-        self.weightsMomentum = np.zeros((inputSize, outputSize))
-        self.bias = np.random.randn(outputSize)
-        self.biasMomentum = np.zeros(outputSize)
+        self.inputSize = inputSize
+        self.outputSize = outputSize
+        self.reset()
+
+    def reset(self):
+
+        self.weights = np.random.randn(self.inputSize, self.outputSize)
+        self.weightsMomentum = np.zeros((self.inputSize, self.outputSize))
+        self.bias = np.random.randn(self.outputSize)
+        self.biasMomentum = np.zeros(self.outputSize)
 
     def forward(self, input):
         return np.matmul(input, self.weights) + self.bias
@@ -53,6 +61,8 @@ class FullyConnected(Layer):
         
     def __str__(self):
         return str(self.weights.shape)
+
+
     
 class Activation(Layer):
 

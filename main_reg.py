@@ -4,9 +4,11 @@ from mlp import MLP
 import pandas as pd
 from visuals.setVisualization import visualizeSet
 from visuals.functionVisualization import visualizeFunction
-
+from gridSearch import runGridSearch
 import functions as fn
 from layer import *
+
+import config_reg
 
 def loadDataset(filename):
     dataset = pd.read_csv(filename)
@@ -16,22 +18,8 @@ def loadDataset(filename):
     y = np.expand_dims(y, axis = 1)
     return x, y 
 
-training_x, training_y = loadDataset('datasets/regression/data.activation.train.100.csv')
-test_x, test_y = loadDataset('datasets/regression/data.activation.test.100.csv')
-
-mlp = MLP(
-    layers = [
-        FullyConnected(1, 16),
-        Activation(fn.sigmoid()),
-        FullyConnected(16, 1),
-    ],
-    lossFunction = Loss(fn.MSE()),
-    learningRate = 0.05,
-    lrDecay = 1,
-    eta = 0.05,
-    batchSize = 64,
-    maxIter = 1000
-)
+training_x, training_y = loadDataset(config_reg.trainDataset)
+test_x, test_y = loadDataset(config_reg.testDataset)
 
 # 2 run options:
 # 1. step by step mode with neural network graph
@@ -54,12 +42,10 @@ parser.add_argument('--show_set', default=False, action='store_true',
 
 args = parser.parse_args()
 
-visualizeFunction(mlp, training_x, training_x)
-
 if args.step_by_step:
-    mlp.presentationOfTraining(training_x, training_y)
+    config_reg.mlp.presentationOfTraining(training_x, training_y)
 else:
-    mlp.train(training_x, training_y, test_x, test_y, plotLoss = args.plot_loss)
+    config_reg.mlp.train(training_x, training_y, test_x, test_y, plotLoss = args.plot_loss)
 
 if args.show_set:
-    visualizeFunction(mlp, training_x, training_x)
+    visualizeFunction(config_reg.mlp, test_x, test_y)
