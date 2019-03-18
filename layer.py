@@ -63,6 +63,37 @@ class FullyConnected(Layer):
         return str(self.weights.shape)
 
 
+class FullyConnectedWithoutBias(Layer):
+
+    def __init__(self, inputSize, outputSize):
+        super().__init__()
+        self.inputSize = inputSize
+        self.outputSize = outputSize
+        self.reset()
+
+    def reset(self):
+        self.weights = np.random.randn(self.inputSize, self.outputSize)
+        self.weightsMomentum = np.zeros((self.inputSize, self.outputSize))
+
+    def forward(self, input):
+        return np.matmul(input, self.weights)
+
+    # eta : momentumMultiplier
+    def backprop(self, gradIn, learningRate, eta):
+        # calculate deltas for weights
+        weightDelta = np.matmul(self.input.T, gradIn)
+        grad_out = np.matmul(gradIn, self.weights.T)
+        self.updateWeight(weightDelta, learningRate, eta)
+        return grad_out
+
+    # momentum from
+    # https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d
+    def updateWeight(self, weightDelta, learningRate, eta):
+        self.weightsMomentum = eta * self.weightsMomentum + (1 - eta) * weightDelta
+        self.weights -= learningRate * self.weightsMomentum
+
+    def __str__(self):
+        return str(self.weights.shape)
     
 class Activation(Layer):
 

@@ -111,11 +111,15 @@ class MLP:
         return suma/n
 
     def getDrawable(self):
-        fullyConnected = list(filter(lambda layer: type(layer) is FullyConnected, self.layers))
+        fullyConnected = list(filter(self.isDrawableLayer, self.layers))
         layersWidth = list(map(lambda fc: fc.weights.shape[0], fullyConnected))
         layersWidth.append(fullyConnected[-1].weights.shape[1]) # that last layer
         allWeights = list(map(lambda fc: fc.weights, fullyConnected))
         return layersWidth, allWeights
+
+    @staticmethod
+    def isDrawableLayer(layer):
+        return type(layer) is FullyConnected or type(layer) is FullyConnectedWithoutBias
     
     def updateBest(self,loss):
         if(self.bestLayer[1] == None or self.bestLayer[1]>loss):
