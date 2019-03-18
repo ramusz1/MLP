@@ -14,21 +14,25 @@ class MLP:
             layers,
             lossFunction = Loss(fn.crossEntropyWithSoftmax()),
             learningRate = 0.1,
+            minAlpha = 0.000001,
             lrDecay = 1,
+            learningRateUpdateTiming = 10,
             eta = 0.05,
             gamma = 0.99,
             batchSize = 32,
-            maxIter = 500):
+            maxIter = 500,
+            earlyStop = True):
 
         self.learningRate = learningRate
         self.eta = eta
+        self.earlyStopIsEnabled = earlyStop
         self.layers = layers
         self.lrDecay = lrDecay
         self.maxIter = maxIter
         self.batchSize = batchSize
         self.lossFunction = lossFunction
-        self.learningRateUpdateTiming = 10
-        self.minAlpha = 0.000001
+        self.learningRateUpdateTiming = learningRateUpdateTiming
+        self.minAlpha = minAlpha
         self.bestLayer = None
         self.worseEpochs = 0
 
@@ -52,7 +56,7 @@ class MLP:
             if plotLoss:
                 lossPlot.plotLive(i, [loss,loss_val])
             self.updateBest(loss_val)              
-            if(self.earlyStop(loss_val)):
+            if self.earlyStopIsEnabled and self.earlyStop(loss_val):
                 break  
 
             self.updateLearningRate(i)
@@ -123,8 +127,8 @@ class MLP:
         else :
             self.worseEpochs = 0
 
-        if self.worseEpochs > 5:
+        if self.worseEpochs > 20:
             self.layers = self.bestLayer[0]
-            # print('early stop')
+            print('early stop')
             return True
         return False

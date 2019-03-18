@@ -7,7 +7,7 @@ def visualizeSet(model, data, label):
     x, y = data[:,0], data[:,1]
     xRange = np.min(x), np.max(x)
     yRange = np.min(y), np.max(y)
-    resolution = 10
+    resolution = 100
     spaceDivision = getDividedSpace(model, xRange, yRange, resolution)
     
     origin = (xRange[0] * resolution, yRange[0] * resolution)
